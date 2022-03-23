@@ -1,0 +1,24 @@
+{
+    "name": "assignment_user",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "scripts": {
+        "start": "nodemon app.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@hapi/joi-date": "^2.0.1",
+        "crypto": "^1.0.1",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.3",
+        "joi-date-extensions": "^1.2.0",
+        "jsonwebtoken": "^8.5.1",
+        "jwt-decode": "^3.1.2",
+        "mongoose": "^6.2.6",
+        "nodemon": "^2.0.15",
+        "swagger-ui-express": "^4.3.0"
+    }
+}

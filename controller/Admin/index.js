@@ -1,0 +1,15 @@
+const express = require("express")
+const route = express.Router()
+const adminController = require("./adminController")
+const adminSchema = require("./schema")
+const { requestValidator } = require("../../middleware/request_validator")
+const verifyToken = require("../../middleware/auth")
+
+route.post("/login", requestValidator(adminSchema.login), adminController.login)
+route.get("/userList", verifyToken.verifyToken, verifyToken.parseJwtAdmin, adminController.userList)
+route.post("/createUser", verifyToken.verifyToken, verifyToken.parseJwtAdmin, requestValidator(adminSchema.createUser), adminController.createUser)
+    // route.get("/userList", adminController.userList)
+    // route.put("/updateadmin/:id", requestValidator(adminSchema.updateadmin), adminCotroller.updateadmin)
+    // route.delete("/deleteadmin/:id", adminCotroller.deleteadmin)
+    // route.get("/findAllDetail", adminCotroller.findAllDetail)
+module.exports = route
