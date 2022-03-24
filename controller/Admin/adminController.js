@@ -2,14 +2,12 @@ const { ObjectID } = require("bson")
 const httpStatus = require("http-status")
 const constents = require("../../constents/constent")
 const { jwtToken } = require("../../utils/jwtToket")
-const userModel = require("../../models/user")
-const modelAdmin = require("../../models/userAdmin")
-
+const dataServices = require("../../models/dataServices")
 const errors = require("../../error/error")
-
+const randPassword = require("../../utils/randamKey")
 const login = async(req, res) => {
     data = req.body
-    getdata = await modelAdmin.findQuery(data)
+    getdata = await dataServices.findQuery("userAdmin", { email: data.userName, password: data.password })
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -20,7 +18,7 @@ const login = async(req, res) => {
 
         res.status(httpStatus.UNAUTHORIZED).json({
             success: "failed",
-            errorCode: httpStatus.UNAUTHORIZED,
+            error: errors.unAuthorized.status,
             message: constents.invalidCrad
         })
     } else {
@@ -38,7 +36,7 @@ const login = async(req, res) => {
 }
 const userList = async(req, res, next) => {
     data = req.body
-    getdata = await userModel.findQuery(data)
+    getdata = await dataServices.findQuery("user", data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -48,7 +46,8 @@ const userList = async(req, res, next) => {
     } else {
         res.status(httpStatus.OK).json({
             success: true,
-            code: httpStatus.OK,
+            status: httpStatus.OK + " OK",
+            message: constents.userList,
             data: getdata
         })
     }
@@ -56,8 +55,8 @@ const userList = async(req, res, next) => {
 
 const createUser = async(req, res, next) => {
     data = req.item
-
-    getdata = await userModel.findQuery({ email: data.email })
+    pass = await randPassword.random_key()
+    getdata = await dataServices.findQuery("user", { email: data.email })
     if (getdata.length > 0) {
         res.status(httpStatus.CONFLICT).json({
             success: false,
@@ -65,7 +64,16 @@ const createUser = async(req, res, next) => {
             message: constents.emailExist,
         })
     } else {
-        let getdata = await userModel.insertQuery(data)
+        let getdata = await dataServices.insertQuery("user", {
+            firstName: data.firstName || "null",
+            lastName: data.lastName || "null",
+            email: data.email,
+            fatherName: data.fatherName || "null",
+            countryCode: data.countryCode || "null",
+            mobile: data.mobile || 0,
+            address: data.address || "null",
+            password: pass
+        })
         if (getdata.error) {
             res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,

@@ -38,9 +38,7 @@ function verifyToken(req, res, next) {
 //valiation for vendor to access apis
 function parseJwtVendor(req, res, next) {
     let token = req.headers['accesstoken']
-        // console.log(token)
     const data = jwtDecode(token)
-    console.log(data)
     if (data.role != "vendor" && data.role != "admin") {
         res.status(httpStatus.UNAUTHORIZED).send({
             success: false,

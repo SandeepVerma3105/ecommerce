@@ -2,21 +2,17 @@ const { ObjectID } = require("bson")
 const productModel = require("../../models/products")
 const httpStatus = require("http-status")
 const constents = require("../../constents/constent")
-
-const paymentModel = require("../../models/payment")
-const userModel = require("../../models/user")
-const modelAdmin = require("../../models/userAdmin")
 const bcrypt = require("bcrypt")
 const errors = require("../../error/error")
 const { jwtToken, parseJwt } = require("../../utils/jwtToket")
+const key = require("../../utils/randamKey")
 
-
-/*----------------------------------------------user---------------------------------------------------------------*/
+/***********************************************user******************************************************************/
 
 const userReg = async(req, res, next) => {
     data = req.item
 
-    getdata = await userModel.findQuery({ email: data.email })
+    getdata = await dataServices.findQuery("user", { email: data.email })
     if (getdata.length > 0) {
         res.status(httpStatus.CONFLICT).json({
             success: false,
@@ -24,7 +20,16 @@ const userReg = async(req, res, next) => {
             message: constents.emailExist,
         })
     } else {
-        let getdata = await userModel.insertQuery(data)
+        let getdata = await dataServices.insertQuery("user", {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            fatherName: data.fatherName,
+            countryCode: data.countryCode,
+            mobile: data.mobile,
+            address: data.address,
+            password: data.password
+        })
         if (getdata.error) {
             res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
@@ -38,13 +43,12 @@ const userReg = async(req, res, next) => {
                 message: constents.registerUser
             })
         }
-
     }
 }
 
 const userLogin = async(req, res) => {
     data = req.body
-    getdata = await userModel.findQuery({ email: data.userName })
+    getdata = await dataServices.findQuery("user", { email: data.userName })
     if (getdata.error) {
         next(errors.internalError)
     } else if (getdata == 0) {
@@ -62,9 +66,10 @@ const userLogin = async(req, res) => {
         })
     }
 }
+
 const userDetail = async(req, res, next) => {
     data = req.body
-    getdata = await userModel.findQuery(data)
+    getdata = await dataServices.findQuery("user", data)
     if (getdata.error) {
         res.status(httpStatus.OK).json({
             success: false,
@@ -78,13 +83,13 @@ const userDetail = async(req, res, next) => {
             data: getdata
         })
     }
-
 }
+
 const updateuser = async(req, res, next) => {
     data = req.item
     qury = req.params.id
     try {
-        getdata = await userModel.updateQuery(ObjectID(qury), data)
+        getdata = await dataServices.updateQuery("user", ObjectID(qury), data)
         if (getdata.error) {
             res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
@@ -112,7 +117,7 @@ const updateuser = async(req, res, next) => {
 }
 const deleteuser = async(req, res, next) => {
     data = req.params.id
-    getdata = await userModel.deleteQuery({ _id: ObjectID(data) })
+    getdata = await dataServices.deleteQuery("user", { _id: ObjectID(data) })
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -135,10 +140,9 @@ const deleteuser = async(req, res, next) => {
     }
 }
 
-
 const findAllDetail = async(req, res, next) => {
     data = req.body
-    getdata = await userModel.findAllDetail(data)
+    getdata = await dataServices.findAllDetail("user", data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -158,9 +162,9 @@ const findAllDetail = async(req, res, next) => {
 
 const paymentDetail = async(req, res, next) => {
     data = req.item
-    getUserData = await userModel.findQuery({ email: data.email })
+    getUserData = await dataServices.findQuery("user", { email: data.email })
     if (getUserData.length > 0) {
-        getCardData = await paymentModel.findQuery({ cardNo: data.cardNo })
+        getCardData = await dataServices.findQuery("payment", { cardNo: data.cardNo })
         if (getCardData.length > 0) {
             res.status(httpStatus.CONFLICT).json({
                 success: false,
@@ -168,7 +172,16 @@ const paymentDetail = async(req, res, next) => {
                 message: constents.cardExists
             })
         } else {
-            let getdata = await paymentModel.insertQuery(data)
+            paymentKey = await key.random_key()
+            let getdata = await dataServices.insertQuery("payment", {
+                email: data.email,
+                cardNo: data.cardNo,
+                cardName: data.cardName,
+                cardHolderName: data.cardHolderName,
+                cvvNo: data.cvvNo,
+                expDate: data.expDate,
+                paymentKey: paymentKey,
+            })
             if (getdata.error) {
                 res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                     success: false,
@@ -181,8 +194,7 @@ const paymentDetail = async(req, res, next) => {
                     status: httpStatus.OK + " OK",
                     message: constents.paymentDetail,
                     data: {
-                        email: getdata[0].email,
-                        key: getdata[0].paymentKey
+                        email: getdata
                     }
                 })
             }
@@ -190,7 +202,7 @@ const paymentDetail = async(req, res, next) => {
     } else {
         res.status(httpStatus.BAD_REQUEST).json({
             success: false,
-            ok: httpStatus.BAD_REQUEST,
+            status: errors.badRequest.status,
             message: constents.notExist
         })
     }
@@ -198,7 +210,7 @@ const paymentDetail = async(req, res, next) => {
 
 const paymentList = async(req, res, next) => {
     data = req.body
-    getdata = await paymentModel.findQuery(data)
+    getdata = await dataServices.findQuery("payment", data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -217,7 +229,7 @@ const paymentList = async(req, res, next) => {
 const updatepayment = async(req, res, next) => {
     data = req.body
     qury = req.params.id
-    getdata = await paymentModel.updateQuery(ObjectID(qury), data)
+    getdata = await dataServices.updateQuery("payment", ObjectID(qury), data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -242,7 +254,7 @@ const updatepayment = async(req, res, next) => {
 
 const deletepayment = async(req, res, next) => {
     data = req.params.id
-    getdata = await paymentModel.deleteQuery({ _id: ObjectID(data) })
+    getdata = await dataServices.deleteQuery("payment", { _id: ObjectID(data) })
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -260,7 +272,6 @@ const deletepayment = async(req, res, next) => {
         res.status(httpStatus.OK).json({
             success: true,
             status: httpStatus.OK + 'OK',
-
             message: constents.deletepayment
         })
     }
@@ -270,10 +281,18 @@ const deletepayment = async(req, res, next) => {
 
 const addProduct = async(req, res, next) => {
     data = req.item
-    console.log(data)
-    let getVendor = userModel.findQuery({ _id: ObjectID(data.vendorId) })
+    console.log(data.vendorId)
+    let getVendor = await dataServices.findQuery("user", { _id: ObjectID(data.vendorId) })
     if (getVendor.length > 0) {
-        let getdata = await productModel.insertQuery(data)
+        let getdata = await dataServices.insertQuery("product", {
+            name: data.name,
+            price: data.price,
+            currency: data.currency,
+            description: data.description,
+            quantity: data.quantity,
+            category: data.category,
+            vendorId: data.vendorId,
+        })
         if (getdata.error) {
             res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
@@ -296,13 +315,13 @@ const addProduct = async(req, res, next) => {
     }
 
 }
-
+const dataServices = require("../../models/dataServices")
 const productList = async(req, res, next) => {
     data = req.body
     if (data.productId) {
         data = { _id: ObjectID(data.productId) }
     }
-    getdata = await productModel.findQuery(data)
+    getdata = await dataServices.findQuery("product", data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -322,8 +341,7 @@ const productList = async(req, res, next) => {
 const updateProduct = async(req, res, next) => {
     data = req.body
     qury = req.params.id
-    console.log(req.body)
-    getdata = await productModel.updateQuery(ObjectID(qury), data)
+    getdata = await dataServices.updateQuery("product", ObjectID(qury), data)
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -338,7 +356,6 @@ const updateProduct = async(req, res, next) => {
             message: constents.idNotExist
         })
     } else {
-        console.log(getdata)
         res.status(httpStatus.OK).json({
             success: true,
             status: httpStatus.OK + " OK",
@@ -349,7 +366,7 @@ const updateProduct = async(req, res, next) => {
 
 const deleteProduct = async(req, res, next) => {
     data = req.params.id
-    getdata = await productModel.deleteQuery({ _id: ObjectID(data) })
+    getdata = await dataServices.deleteQuery("product", { _id: ObjectID(data) })
     if (getdata.error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
@@ -387,6 +404,4 @@ module.exports = {
     paymentList,
     updatepayment,
     deletepayment,
-
-
 }

@@ -10,6 +10,15 @@ const addProduct = joi.object().keys({
     vendorId: joi.string().required().min(24).max(24),
 })
 
+const updateProduct = joi.object().keys({
+    name: joi.string().min(3).regex(pattern.productPattern),
+    price: joi.number(),
+    currency: joi.string(),
+    description: joi.string().regex(pattern.productPattern),
+    quantity: joi.number().integer(),
+    category: joi.string(),
+    vendorId: joi.string().min(24).max(24),
+})
 const productListByVendor = joi.object().keys({
     vendorId: joi.string().required()
 })
@@ -21,5 +30,6 @@ const productByProductId = joi.object().keys({
 module.exports = {
     addProduct,
     productListByVendor,
-    productByProductId
+    productByProductId,
+    updateProduct
 }

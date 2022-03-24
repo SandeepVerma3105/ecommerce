@@ -1,7 +1,7 @@
 const httpStatus = require("http-status");
 const Joi = require("joi");
 const { head } = require("lodash")
-
+const errors = require("../error/error")
 const requestValidator = (schema, property = "body") => async(req, res, next) => {
     data = req[property]
     try {
@@ -16,11 +16,16 @@ const requestValidator = (schema, property = "body") => async(req, res, next) =>
         } else {
             console.log('Schema error');
         }
-        res.status(httpStatus.BAD_REQUEST).send({ success: false, error: httpStatus.BAD_REQUEST + " " + err.name, errorMsg: err.message })
+        res.status(httpStatus.BAD_REQUEST).send({ success: false, error: errors.badRequest.status, errorMsg: err.message })
         return next([err.message]);
     }
+    if (Object.keys(data).length > 0) {
+        return next();
+    } else {
+        res.status(httpStatus.BAD_REQUEST).send({ success: false, error: errors.badRequest.status, errorMsg: "can not update with empty field" })
 
-    return next();
+    }
+
 }
 
 module.exports = { requestValidator };

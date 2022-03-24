@@ -24,7 +24,7 @@ route.post("/addProduct", verifyToken.verifyToken, verifyToken.parseJwtVendor, r
 route.get("/productList", verifyToken.verifyToken, verifyToken.parseJwtVendor, vendorController.productList)
 route.get("/productListByVendor", verifyToken.verifyToken, verifyToken.parseJwtVendor, requestValidator(productSchema.productListByVendor), vendorController.productList)
 route.get("/productByProductId", verifyToken.verifyToken, verifyToken.parseJwtVendor, requestValidator(productSchema.productByProductId), vendorController.productList)
-route.put("/updateProduct/:id", verifyToken.verifyToken, verifyToken.parseJwtVendor, vendorController.updateProduct)
+route.put("/updateProduct/:id", verifyToken.verifyToken, verifyToken.parseJwtVendor, requestValidator(productSchema.updateProduct), vendorController.updateProduct)
 route.delete("/deleteProduct/:id", verifyToken.verifyToken, verifyToken.parseJwtVendor, vendorController.deleteProduct)
 
 

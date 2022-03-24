@@ -11,9 +11,13 @@ unAuthorized.status = HttpStatus.UNAUTHORIZED + " UNAUTHORIZED"
 
 const conflict = new Error("UnAuthorized")
 conflict.status = HttpStatus.CONFLICT + " CONFLICT"
+
+const badRequest = new Error("BAD_REQUEST")
+badRequest.status = HttpStatus.BAD_REQUEST + " BAD_REQUEST"
 module.exports = {
     internalError,
     dataNotFound,
     unAuthorized,
-    conflict
+    conflict,
+    badRequest
 }
